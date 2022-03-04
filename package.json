@@ -1,7 +1,7 @@
 {
   "name": "digital-banking-smart-contract",
   "version": "0.1.0",
-  "description": "DeFi Token Staking App",
+  "description": "digital banking smart contract App",
   "author": "ojames314@gmail.com",
   "dependencies": {
     "babel-polyfill": "6.26.0",
