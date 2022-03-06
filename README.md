@@ -40,7 +40,7 @@ therefore total seconds in 7days = 60 * 60 * 24 * 7 = 604,800sec
 * ####Please note block timestamp can also be used for simplicity sake
 
 
-### Depencies
+### Dependencies
 * Solidity programming
 * Truffle framework
 * Ganache : local blochain
