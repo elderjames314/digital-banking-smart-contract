@@ -9,10 +9,6 @@ import "./RgtToken.sol";
 import "./NativeToken.sol";
 
 
-
-
-
-
 // This is like tokenFarm that gives reward for each token staked(deposited) by investor
 // the idea is, an investor will stake a multiple of 10 RGT token.
 // And for each staken, 0.1 RGT token is reward every 24 hours.
@@ -80,7 +76,10 @@ contract DigitalBankingFarm {
 
     //1. Stake token: this is part where investor we deposit RGT token to our digital banking contract
     //takes amount of RGT token as an argument and it has to be multiple of 10
-    function depositToken(uint _amount) public isMultipleOfTen(_amount) {
+    function depositToken(uint _amount) public {
+
+        //before anything, lets check if the amount supplied is a multiple of 10 RGT token
+        require(_amount % 10 == 0, "Amount supplied must be a multiple of 10 eg 10, 20, 30");
 
         // to stake RGT token to our contract, first we will transfer whatever the amount the sender is sending
         // to this contract
@@ -112,7 +111,7 @@ contract DigitalBankingFarm {
             //open account for him
             Account memory newAccount = Account({
             balance: _amount,
-            reward: rewardAmount,
+            reward: 0,
             exists: true
             });
             //finally add him up to the list of existing stakers
@@ -181,15 +180,6 @@ contract DigitalBankingFarm {
 
     }
 
-
-
-
-
-    // HELPER FUNCTIONS
-    modifier isMultipleOfTen(uint _amount) {
-        require(_amount % 10 == 0, "The RGT amount has to be multiple of 10 eg 10, 20, 30");
-        _;
-    }
 
 
 

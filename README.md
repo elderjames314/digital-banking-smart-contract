@@ -19,9 +19,11 @@ upon an investor depositing into our app with RGT token. And please note that in
 ### Depencies
 * Solidity programming
 * Truffle framework
-* Ganache : blick
+* Ganache : local blochain
 * Mocha/Chai
 * React
+* Ethereum alam clock
+* moment
 
 ### Report
 The architectural diagram report can be found in this part: /report
