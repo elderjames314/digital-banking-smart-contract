@@ -7,7 +7,7 @@ pragma solidity ^0.5.0;
 contract RgtToken {
     string  public name = "Really Great Tech Token";
     string  public symbol = "RGT";
-    uint256 public totalSupply = 1000000000000000000000000; // 1 million tokens for staking
+    uint256 public totalSupply = 10000000000000000000000000; // 1 million tokens for staking
     uint8   public decimals = 18;
 
     event Transfer(

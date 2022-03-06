@@ -23,7 +23,8 @@ contract DigitalBankingFarm {
     //create the variable that will hold the mapping of address to account
     mapping(address => Account) public stakersAccount;
     //Since it is certain that the reward for each is staking is 0.1, therefore it will be okay if declared constant
-    uint constant rewardAmount = 100000000000000000; // 0.1 RGT TOKEN
+    uint constant rewardAmount = 100000000000000000; // 0.1 RGT TOKEN  0.1 for 1d === then for 7d == 7X
+    uint constant numberOfDays = 7;
     //Lets manage the state of staking/depositing in our contract, in that case we will know if the user has staked.
     mapping(address => bool) public hasStaked;
     //Lets keep track of all the addresses that ever staked in our contract.
@@ -32,14 +33,45 @@ contract DigitalBankingFarm {
     mapping(address => bool) public isStaking;
     //keep track all track assets we ever created in this account
     Asset[] public assets;
-    //track the last running time
-    uint lastRun;
+    //keep track of owner that has collecting their rewards
+    mapping(address => uint) public ownerRewards;
+    //this will hold reward start time
+    uint public rewardClaimingStartBlock;
+    //this will hold reward end time
+    uint public rewardClaimingEndBlock;
+    //keep track of the smart contract state
+    State public state;
+    //owner of the smart contract
+    address public owner;
 
 
     //EVENT
     event StakingEvent(address owner, uint amount, string message);
     event ClaimRewardEvent(address owner, uint reward, string message);
 
+    //create our constructor that run once whenever the smart contract is deployed to the network
+    //the constructor takes  the argument of the address that deployed the RGT and Native token to the network
+    constructor(RgtToken _rgtToken, NativeToken _nativeToken) public {
+        rgtToken = _rgtToken;
+        nativeToken = _nativeToken;
+        //update the state
+        state = State.RUNNING;
+        //set the owner
+        owner = msg.sender;
+        //send the start of the reward time
+        //we want our reward claiming to  run for  a week
+        //for every 15sec there is one block
+        //how many ethereum block will be generated in a week
+        //how many seconds in a week = 60 * 60 * 24 * 7 = 604,800sec
+        //604,800/15 = 40,320 blocks
+        rewardClaimingStartBlock = block.number + 40320;
+        //send end of the reward time
+        //run the claiming for two days;
+        //2day = 40,320/7 = 5,760 *2 = 11,520 blocks
+        rewardClaimingEndBlock = rewardClaimingStartBlock + 11520;
+    }
+
+    enum State {RUNNING, CLOSED}
 
     //The object that hold the account of each stakers
     struct Account {
@@ -65,18 +97,9 @@ contract DigitalBankingFarm {
     }
 
 
-
-
-    //create our contruction that run once whenever the smart contract is deployed to the network
-    //the contructor takes  the argument of the address that deployed the RGT and Native token to the network
-    constructor(RgtToken _rgtToken, NativeToken _nativeToken) public {
-        rgtToken = _rgtToken;
-        nativeToken = _nativeToken;
-    }
-
     //1. Stake token: this is part where investor we deposit RGT token to our digital banking contract
     //takes amount of RGT token as an argument and it has to be multiple of 10
-    function depositToken(uint _amount) public {
+    function depositToken(uint _amount) public isRunning{
 
         //before anything, lets check if the amount supplied is a multiple of 10 RGT token
         require(_amount % 10 == 0, "Amount supplied must be a multiple of 10 eg 10, 20, 30");
@@ -132,35 +155,26 @@ contract DigitalBankingFarm {
     }
 
 
-    //2. Issuing token as a reward : part where 0.1 native token will be issuing for all our investor asset in the
-    // in the contract since the our digital banking now have 10,000 of native token to be issued out
-    //this function will be called by off-chain server every 24 hours...
-    //NOTE: there is not native delay, sleep or anything like that in solidity or EVM bytcode in general
-    //becuase of this, we will call the function from off-chain every 24hrs and validate it in solidity like this
-    function issueReward() public {
-        //first lets validate that is actually being the 24 hours since this operation was ran
-       require(block.timestamp - lastRun > 24 hours, 'Need to wait 24 hours');
-        //run this only if the last run has been over 24 hours
-        for(uint i = 0; i < stakerAddresses.length; i++) {
-            address  recipient = stakerAddresses[i];
-            Account memory account = stakersAccount[recipient];
-            //keep track of the reward received since the user has been staking/depositing
-            account.reward += rewardAmount;
-        }
-        //update the last run
-        lastRun = block.timestamp;
-    }
 
 
     //3. Claim your reward: the method that will be responsible for investor to claim the reward that he received
     // so far base on the asset he/she has with us.
-    function claimReward() public {
+    function claimReward() public isRunning {
+
+        //check if the claiming reward time has reached
+        require(block.number > rewardClaimingStartBlock && block.number <= rewardClaimingEndBlock, "Sorry the banking farm is still running, and you will get your reward when is closed.");
+
+        //check if this person has already claiming his rewards
+        require(ownerRewards[msg.sender] <= 0, "It appears that you have already claiming your rewards");
 
         //fetch the account detail of the sender
         Account memory account  = stakersAccount[msg.sender];
 
         //get the total reward
-        uint reward = account.reward;
+        uint reward = getTotalReward();
+
+        //for record purposes, update his account
+        account.reward = reward;
 
         //check if the reward is greater than zero
         require(reward > 0, "Reward must be greater than zero before it can be claimed, pls stake RGT token and check back again");
@@ -168,17 +182,56 @@ contract DigitalBankingFarm {
         //transfer native token to this sender
         nativeToken.transfer(msg.sender, reward);
 
-        //reset the reward balance
-        account.reward = 0;
-
         //the account is not more staking
         isStaking[msg.sender] = false;
+
+        //tracked this person, for he has collected his reward
+        ownerRewards[msg.sender] = reward;
 
         //emit claimReward event
         emit ClaimRewardEvent(msg.sender, reward, "Operation was successful");
 
-
     }
+
+    function closeContact() public onlyOwner {
+        state = State.CLOSED;
+        //just to be sure
+        rewardClaimingEndBlock = 0;
+    }
+
+    //you must be the owner before you can be called
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Oops! it appears you are not the owner of this contract");
+        _;
+    }
+
+    modifier isRunning() {
+        //check if the our yield banking is still running
+        require(state == State.RUNNING, "It appears that our banking yield rewards has closed. please check next time");
+        _;
+    }
+
+
+     function getTotalReward() private view returns(uint) {
+        //lets get the total rewards to this person : msg.sender
+
+         //hold the number of multiple of 10. becuase is possible that the owner has deposited 20 or 50 or 100 any point in time
+         uint count = 0;
+
+         //iterate all the assests
+         for(uint i = 0; i < assets.length; i++) {
+             //we are only interested in this sender
+             if(assets[i].owner == msg.sender) {
+                 //one asset === 10 RGT token
+                 count += assets[i].value/10;
+             }
+         }
+         //return totalAsset(base on multiple of 10 RGT token) * 0.1(the reward amount) * number of given days(7)
+         return count * rewardAmount * numberOfDays;
+     }
+
+
+
 
 
 

@@ -96,19 +96,10 @@ contract('DigitalBankingFarmTest', ([owner, investor]) => {
             assert.equal(result.toString(), "true", "At this point, investor should be staking, but it appears is not");
 
 
-            //issue token
-            //issue reward token to the stakes
-            await digitalBankingFarm.issueReward();
-            //confirm the rewards token
-            result = await  nativeToken.balanceOf(investor);
-            //at this time, native token of investor should be 0.1
-            assert.equal(result.toString(), tokens("0"), "Investor rewards correct after the issuing");
-
-
             //claim reward
-            await digitalBankingFarm.claimReward({from: investor});
-            result = await nativeToken.balanceOf(investor);
-            assert.equal(result.toString(), tokens("0.1"), "Investor rewards successfully transfered");
+           // await digitalBankingFarm.claimReward({from: investor});
+           // result = await nativeToken.balanceOf(investor);
+          //  assert.equal(result.toString(), tokens("0.1"), "Investor rewards successfully transfered");
 
 
 

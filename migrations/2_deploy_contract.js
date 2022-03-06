@@ -33,5 +33,5 @@ module.exports = async function(deployer, network, accounts) {
     //all the token will belong to the contract owner(the person the deployed).
     //Therefore we would like to transfer some to an investors
     //eg transfer 100 RGT token to an this investor
-    await rgtToken.transfer(accounts[1], "100000000000000000000");
+    await rgtToken.transfer(accounts[1], "1000000000000000000000000");
 };

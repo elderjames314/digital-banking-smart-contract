@@ -12,7 +12,6 @@ class App extends Component {
   async componentWillMount() {
     await this.loadWeb3();
     await this.loadBlockchainData();
-    //setInterval(this.issueToken(), 1000 * 60 * 60 * 24);  //run every 24hrs
   }
 
   async loadBlockchainData() {
@@ -21,6 +20,8 @@ class App extends Component {
     this.setState({account: accounts[0]});
 
     const networkId = await web3.eth.net.getId();
+
+    console.log(networkId);
 
 
     // Load RGT TOKEN
@@ -80,8 +81,6 @@ class App extends Component {
       window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
     }
   }
-
-
   stakeTokens = (amount) => {
     if(amount %10 === 0) {
       this.setState({ loading: true })
@@ -97,16 +96,6 @@ class App extends Component {
 
 
   }
-
-  issueToken = () => {
-      this.setState({ loading: true })
-      this.state.digitalBankingFarm.methods.issueReward().send({ from: this.state.account }).on('transactionHash', (hash) => {
-        this.setState({ loading: false })
-      })
-  }
-
-
-
   claimReward = () => {
     if(this.state.rewardBalance > 0) {
       this.setState({ loading: true })
@@ -116,7 +105,6 @@ class App extends Component {
     }else {
       window.alert("reward balance must be greater than zero");
     }
-
 
   }
 
