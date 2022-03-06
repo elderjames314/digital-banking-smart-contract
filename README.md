@@ -48,6 +48,12 @@ therefore 7days = 60 * 60 * 24 * 7 = 604,800sec
 * Mocha/Chai
 * React
 
+### Access the app 
+* https://freightschain.com/
+* please connect your metamask to avanlanche C-Chain
+
+
+
 ### Report
 * The architectural diagram report can be found in this part: /report/DigitalBankingArchetecturalDesign.pdf
 * the test script can be found on /test/DigitalBankingFarmTest.test.js
