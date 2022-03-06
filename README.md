@@ -49,5 +49,5 @@ therefore 7days = 60 * 60 * 24 * 7 = 604,800sec
 * React
 
 ### Report
-* The architectural diagram report can be found in this part: /report
+* The architectural diagram report can be found in this part: /report/DigitalBankingArchetecturalDesign.pdf
 * the test script can be found on /test/DigitalBankingFarmTest.test.js
