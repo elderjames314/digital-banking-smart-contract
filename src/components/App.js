@@ -107,7 +107,6 @@ class App extends Component {
     }
 
   }
-
   constructor(props) {
     super(props)
     this.state = {
@@ -122,7 +121,6 @@ class App extends Component {
       loading: true
     }
   }
-
   render() {
     let content;
     if(this.state.loading){
@@ -136,7 +134,6 @@ class App extends Component {
           claimReward={this.claimReward}
       />
     }
-
     return (
       <div>
         <Navbar account={this.state.account} />
@@ -150,9 +147,7 @@ class App extends Component {
                   rel="noopener noreferrer"
                 >
                 </a>
-
                 {content}
-
               </div>
             </main>
           </div>
